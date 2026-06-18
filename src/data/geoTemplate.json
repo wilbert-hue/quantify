@@ -1,0 +1,367 @@
+{
+  "regionsInOrder": [
+    "Global",
+    "North America",
+    "U.S.",
+    "Canada",
+    "Europe",
+    "U.K.",
+    "Germany",
+    "Italy",
+    "France",
+    "Spain",
+    "Russia",
+    "Netherlands",
+    "Ireland",
+    "Sweden",
+    "Poland",
+    "Hungary",
+    "Slovakia",
+    "Turkey",
+    "Rest of Europe",
+    "Asia Pacific",
+    "China",
+    "Japan",
+    "India",
+    "South Korea",
+    "ASEAN",
+    "Singapore",
+    "Malaysia",
+    "Thailand",
+    "Indonesia",
+    "Rest of ASEAN",
+    "Australia",
+    "Rest of Asia Pacific",
+    "Latin America",
+    "Brazil",
+    "Argentina",
+    "Mexico",
+    "Rest of Latin America",
+    "Middle East & Africa",
+    "GCC",
+    "South Africa",
+    "Rest of Middle East & Africa"
+  ],
+  "geoRows": [
+    {
+      "region": "Global",
+      "segment": "By Region",
+      "subSegment": "North America",
+      "subSegment1": "North America",
+      "subSegment2": "North America",
+      "key": "Global|By Region|North America|North America|North America"
+    },
+    {
+      "region": "Global",
+      "segment": "By Region",
+      "subSegment": "Europe",
+      "subSegment1": "Europe",
+      "subSegment2": "Europe",
+      "key": "Global|By Region|Europe|Europe|Europe"
+    },
+    {
+      "region": "Global",
+      "segment": "By Region",
+      "subSegment": "Asia Pacific",
+      "subSegment1": "Asia Pacific",
+      "subSegment2": "Asia Pacific",
+      "key": "Global|By Region|Asia Pacific|Asia Pacific|Asia Pacific"
+    },
+    {
+      "region": "Global",
+      "segment": "By Region",
+      "subSegment": "Latin America",
+      "subSegment1": "Latin America",
+      "subSegment2": "Latin America",
+      "key": "Global|By Region|Latin America|Latin America|Latin America"
+    },
+    {
+      "region": "Global",
+      "segment": "By Region",
+      "subSegment": "Middle East & Africa",
+      "subSegment1": "Middle East & Africa",
+      "subSegment2": "Middle East & Africa",
+      "key": "Global|By Region|Middle East & Africa|Middle East & Africa|Middle East & Africa"
+    },
+    {
+      "region": "North America",
+      "segment": "By Country",
+      "subSegment": "U.S.",
+      "subSegment1": "U.S.",
+      "subSegment2": "U.S.",
+      "key": "North America|By Country|U.S.|U.S.|U.S."
+    },
+    {
+      "region": "North America",
+      "segment": "By Country",
+      "subSegment": "Canada",
+      "subSegment1": "Canada",
+      "subSegment2": "Canada",
+      "key": "North America|By Country|Canada|Canada|Canada"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "U.K.",
+      "subSegment1": "U.K.",
+      "subSegment2": "U.K.",
+      "key": "Europe|By Country|U.K.|U.K.|U.K."
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Germany",
+      "subSegment1": "Germany",
+      "subSegment2": "Germany",
+      "key": "Europe|By Country|Germany|Germany|Germany"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Italy",
+      "subSegment1": "Italy",
+      "subSegment2": "Italy",
+      "key": "Europe|By Country|Italy|Italy|Italy"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "France",
+      "subSegment1": "France",
+      "subSegment2": "France",
+      "key": "Europe|By Country|France|France|France"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Spain",
+      "subSegment1": "Spain",
+      "subSegment2": "Spain",
+      "key": "Europe|By Country|Spain|Spain|Spain"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Russia",
+      "subSegment1": "Russia",
+      "subSegment2": "Russia",
+      "key": "Europe|By Country|Russia|Russia|Russia"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Netherlands",
+      "subSegment1": "Netherlands",
+      "subSegment2": "Netherlands",
+      "key": "Europe|By Country|Netherlands|Netherlands|Netherlands"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Ireland",
+      "subSegment1": "Ireland",
+      "subSegment2": "Ireland",
+      "key": "Europe|By Country|Ireland|Ireland|Ireland"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Sweden",
+      "subSegment1": "Sweden",
+      "subSegment2": "Sweden",
+      "key": "Europe|By Country|Sweden|Sweden|Sweden"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Poland",
+      "subSegment1": "Poland",
+      "subSegment2": "Poland",
+      "key": "Europe|By Country|Poland|Poland|Poland"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Hungary",
+      "subSegment1": "Hungary",
+      "subSegment2": "Hungary",
+      "key": "Europe|By Country|Hungary|Hungary|Hungary"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Slovakia",
+      "subSegment1": "Slovakia",
+      "subSegment2": "Slovakia",
+      "key": "Europe|By Country|Slovakia|Slovakia|Slovakia"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Turkey",
+      "subSegment1": "Turkey",
+      "subSegment2": "Turkey",
+      "key": "Europe|By Country|Turkey|Turkey|Turkey"
+    },
+    {
+      "region": "Europe",
+      "segment": "By Country",
+      "subSegment": "Rest of Europe",
+      "subSegment1": "Rest of Europe",
+      "subSegment2": "Rest of Europe",
+      "key": "Europe|By Country|Rest of Europe|Rest of Europe|Rest of Europe"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "China",
+      "subSegment1": "China",
+      "subSegment2": "China",
+      "key": "Asia Pacific|By Country|China|China|China"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "Japan",
+      "subSegment1": "Japan",
+      "subSegment2": "Japan",
+      "key": "Asia Pacific|By Country|Japan|Japan|Japan"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "India",
+      "subSegment1": "India",
+      "subSegment2": "India",
+      "key": "Asia Pacific|By Country|India|India|India"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "South Korea",
+      "subSegment1": "South Korea",
+      "subSegment2": "South Korea",
+      "key": "Asia Pacific|By Country|South Korea|South Korea|South Korea"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "ASEAN",
+      "subSegment1": "ASEAN",
+      "subSegment2": "ASEAN",
+      "key": "Asia Pacific|By Country|ASEAN|ASEAN|ASEAN"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "Australia",
+      "subSegment1": "Australia",
+      "subSegment2": "Australia",
+      "key": "Asia Pacific|By Country|Australia|Australia|Australia"
+    },
+    {
+      "region": "Asia Pacific",
+      "segment": "By Country",
+      "subSegment": "Rest of Asia Pacific",
+      "subSegment1": "Rest of Asia Pacific",
+      "subSegment2": "Rest of Asia Pacific",
+      "key": "Asia Pacific|By Country|Rest of Asia Pacific|Rest of Asia Pacific|Rest of Asia Pacific"
+    },
+    {
+      "region": "ASEAN",
+      "segment": "By Country",
+      "subSegment": "Singapore",
+      "subSegment1": "Singapore",
+      "subSegment2": "Singapore",
+      "key": "ASEAN|By Country|Singapore|Singapore|Singapore"
+    },
+    {
+      "region": "ASEAN",
+      "segment": "By Country",
+      "subSegment": "Malaysia",
+      "subSegment1": "Malaysia",
+      "subSegment2": "Malaysia",
+      "key": "ASEAN|By Country|Malaysia|Malaysia|Malaysia"
+    },
+    {
+      "region": "ASEAN",
+      "segment": "By Country",
+      "subSegment": "Thailand",
+      "subSegment1": "Thailand",
+      "subSegment2": "Thailand",
+      "key": "ASEAN|By Country|Thailand|Thailand|Thailand"
+    },
+    {
+      "region": "ASEAN",
+      "segment": "By Country",
+      "subSegment": "Indonesia",
+      "subSegment1": "Indonesia",
+      "subSegment2": "Indonesia",
+      "key": "ASEAN|By Country|Indonesia|Indonesia|Indonesia"
+    },
+    {
+      "region": "ASEAN",
+      "segment": "By Country",
+      "subSegment": "Rest of ASEAN",
+      "subSegment1": "Rest of ASEAN",
+      "subSegment2": "Rest of ASEAN",
+      "key": "ASEAN|By Country|Rest of ASEAN|Rest of ASEAN|Rest of ASEAN"
+    },
+    {
+      "region": "Latin America",
+      "segment": "By Country",
+      "subSegment": "Brazil",
+      "subSegment1": "Brazil",
+      "subSegment2": "Brazil",
+      "key": "Latin America|By Country|Brazil|Brazil|Brazil"
+    },
+    {
+      "region": "Latin America",
+      "segment": "By Country",
+      "subSegment": "Argentina",
+      "subSegment1": "Argentina",
+      "subSegment2": "Argentina",
+      "key": "Latin America|By Country|Argentina|Argentina|Argentina"
+    },
+    {
+      "region": "Latin America",
+      "segment": "By Country",
+      "subSegment": "Mexico",
+      "subSegment1": "Mexico",
+      "subSegment2": "Mexico",
+      "key": "Latin America|By Country|Mexico|Mexico|Mexico"
+    },
+    {
+      "region": "Latin America",
+      "segment": "By Country",
+      "subSegment": "Rest of Latin America",
+      "subSegment1": "Rest of Latin America",
+      "subSegment2": "Rest of Latin America",
+      "key": "Latin America|By Country|Rest of Latin America|Rest of Latin America|Rest of Latin America"
+    },
+    {
+      "region": "Middle East & Africa",
+      "segment": "By Country",
+      "subSegment": "GCC",
+      "subSegment1": "GCC",
+      "subSegment2": "GCC",
+      "key": "Middle East & Africa|By Country|GCC|GCC|GCC"
+    },
+    {
+      "region": "Middle East & Africa",
+      "segment": "By Country",
+      "subSegment": "South Africa",
+      "subSegment1": "South Africa",
+      "subSegment2": "South Africa",
+      "key": "Middle East & Africa|By Country|South Africa|South Africa|South Africa"
+    },
+    {
+      "region": "Middle East & Africa",
+      "segment": "By Country",
+      "subSegment": "Rest of Middle East & Africa",
+      "subSegment1": "Rest of Middle East & Africa",
+      "subSegment2": "Rest of Middle East & Africa",
+      "key": "Middle East & Africa|By Country|Rest of Middle East & Africa|Rest of Middle East & Africa|Rest of Middle East & Africa"
+    }
+  ]
+}
