@@ -47,9 +47,11 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
     const key = [def.segment, def.subSegment, def.subSegment1, def.subSegment2].join("|");
     const category = row.uploadCategory;
 
-    if (isGeoSegment(def.segment)) {
+    // Treat as geo if the segment name signals geography OR the user uploaded it as a geography
+    const treatAsGeo = isGeoSegment(def.segment) || category === "geographies";
+
+    if (treatAsGeo) {
       if (category === "segments") continue;
-      if (category !== "geographies" && category != null) continue;
       if (!isValidGeoDefinition(def)) continue;
       if (seenGeo.has(key)) continue;
       seenGeo.add(key);
