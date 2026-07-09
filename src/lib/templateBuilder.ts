@@ -59,7 +59,6 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
       continue;
     }
 
-    if (category === "geographies") continue;
     if (seenSegments.has(key)) continue;
     seenSegments.add(key);
     segmentDefs.push(def);
