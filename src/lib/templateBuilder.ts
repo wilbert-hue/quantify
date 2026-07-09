@@ -44,11 +44,12 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
     const category = row.uploadCategory;
 
     // Geography uploads: use raw row data directly — skip resolveSegmentDefinition
-    // which rejects rows whose segment name isn't a "By X" header (e.g. filename fallback)
+    // which rejects rows whose segment name isn't a "By X" header (e.g. filename fallback).
+    // Always normalize segment to "By Region" so geography never leaks into the segment dropdown.
     if (category === "geographies") {
       if (!row.subSegment) continue;
       const def: SegmentDefinition = {
-        segment: row.segment,
+        segment: "By Region",
         subSegment: row.subSegment,
         subSegment1: row.subSegment1 || row.subSegment,
         subSegment2: row.subSegment2 || row.subSegment1 || row.subSegment,
