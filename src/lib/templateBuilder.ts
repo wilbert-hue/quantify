@@ -87,8 +87,8 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
  * hierarchy: Global → parent (subSegment) → child (subSegment1)
  */
 function regionsFromGeoDefs(geoDefs: SegmentDefinition[]): string[] {
-  const regions: string[] = ["Global"];
-  const seen = new Set<string>(["Global"]);
+  const regions: string[] = [];
+  const seen = new Set<string>();
 
   for (const geo of geoDefs) {
     const parent = geo.subSegment?.trim();
