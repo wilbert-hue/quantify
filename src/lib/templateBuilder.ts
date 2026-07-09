@@ -41,16 +41,31 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
   const seenGeo = new Set<string>();
 
   for (const row of parsedRows) {
+    const category = row.uploadCategory;
+
+    // Geography uploads: use raw row data directly — skip resolveSegmentDefinition
+    // which rejects rows whose segment name isn't a "By X" header (e.g. filename fallback)
+    if (category === "geographies") {
+      if (!row.subSegment) continue;
+      const def: SegmentDefinition = {
+        segment: row.segment,
+        subSegment: row.subSegment,
+        subSegment1: row.subSegment1 || row.subSegment,
+        subSegment2: row.subSegment2 || row.subSegment1 || row.subSegment,
+      };
+      const key = [def.segment, def.subSegment, def.subSegment1, def.subSegment2].join("|");
+      if (seenGeo.has(key)) continue;
+      seenGeo.add(key);
+      geoDefs.push(def);
+      continue;
+    }
+
     const def = toSegmentDefinition(row);
     if (!def) continue;
 
     const key = [def.segment, def.subSegment, def.subSegment1, def.subSegment2].join("|");
-    const category = row.uploadCategory;
 
-    // Treat as geo if the segment name signals geography OR the user uploaded it as a geography
-    const treatAsGeo = isGeoSegment(def.segment) || category === "geographies";
-
-    if (treatAsGeo) {
+    if (isGeoSegment(def.segment)) {
       if (category === "segments") continue;
       if (!isValidGeoDefinition(def)) continue;
       if (seenGeo.has(key)) continue;
