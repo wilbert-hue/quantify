@@ -17,19 +17,29 @@ export const MAIN_SEGMENT_TYPES = [
   "By Technology",
   "By Age Group",
   "By End User",
+  "By End-Use Industry",
+  "By End Use Industry",
+  "By End Use",
   "By Region",
   "By Country",
   "By Installation Type",
+  "By Installation",
   "By Price Range",
   "By Component",
-  "By End Use",
   "By Distribution Channel",
   "By Material Type",
+  "By Service Type",
+  "By Revenue Model",
+  "By Power Source",
+  "By Working Height",
+  "By Platform Capacity",
+  "By Well Type",
+  "By Well Location",
 ] as const;
 
 export type MainSegmentType = (typeof MAIN_SEGMENT_TYPES)[number];
 
-const SEGMENT_HEADER_RE = /\bBy\s+(?:[A-Z][A-Za-z]*(?:\s+[A-Z][A-Za-z]*){0,4})/g;
+const SEGMENT_HEADER_RE = /\bBy\s+(?:[A-Z][A-Za-z-]*(?:\s+[A-Z][A-Za-z-]*){0,4})/g;
 
 export function extractSegmentHeaders(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
