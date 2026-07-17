@@ -91,18 +91,18 @@ function regionsFromGeoDefs(geoDefs: SegmentDefinition[]): string[] {
   const regions: string[] = [];
   const seen = new Set<string>();
 
-  for (const geo of geoDefs) {
-    const parent = geo.subSegment?.trim();
-    const child = geo.subSegment1?.trim();
+  const add = (r: string | undefined) => {
+    const v = r?.trim();
+    if (v && v.toLowerCase() !== "none" && !seen.has(v)) {
+      seen.add(v);
+      regions.push(v);
+    }
+  };
 
-    if (parent && !seen.has(parent)) {
-      seen.add(parent);
-      regions.push(parent);
-    }
-    if (child && child.toLowerCase() !== "none" && child !== parent && !seen.has(child)) {
-      seen.add(child);
-      regions.push(child);
-    }
+  for (const geo of geoDefs) {
+    add(geo.subSegment);   // level 1 region (e.g. Asia Pacific)
+    add(geo.subSegment1);  // level 2 region (e.g. South Asia)
+    add(geo.subSegment2);  // level 3 region (e.g. India) — only added when different from level 2
   }
 
   return regions;

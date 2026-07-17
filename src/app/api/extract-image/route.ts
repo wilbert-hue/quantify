@@ -5,50 +5,69 @@ type Row = { segment: string; subSegment: string; subSegment1: string; subSegmen
 
 const PROMPT = `This image shows a slide with one or more panels. Each panel has a blue header bar and a bullet list.
 
-The bullet list in each panel has TWO visual levels:
-- LEVEL 1 items: have a FILLED SQUARE bullet, are positioned at the LEFT edge of the content
-- LEVEL 2 items: have an OPEN CIRCLE bullet, are INDENTED (positioned to the RIGHT of level-1 items), and belong to the nearest level-1 item above them
+The bullet list can have up to THREE visual levels:
+- LEVEL 1: FILLED SQUARE bullet (■), at the far LEFT edge
+- LEVEL 2: OPEN CIRCLE bullet (○), INDENTED right of level-1
+- LEVEL 3: SMALL DOT (·) or further-indented circle, INDENTED right of level-2
 
-YOUR OUTPUT FORMAT:
-One line per relationship, using " >>> " (space-arrow-arrow-arrow-space) as separator:
+YOUR OUTPUT FORMAT — one line per item at the DEEPEST level it reaches:
 
-For each LEVEL 2 item: write    [its LEVEL 1 parent] >>> [the LEVEL 2 item]
-For each LEVEL 1 item with NO LEVEL 2 children: write    [LEVEL 1 item] >>> (none)
+  If item has LEVEL 3 children:   [LEVEL 1] >>> [LEVEL 2] >>> [LEVEL 3]
+  If item has LEVEL 2 but no L3:  [LEVEL 1] >>> [LEVEL 2]
+  If LEVEL 1 has NO children:     [LEVEL 1] >>> (none)
+
+KEY RULE: A parent that HAS children of its own must NEVER get its own output line — only its deepest children appear.
 
 Separate panels with: === [exact full header text] ===
 
-MULTI-LINE RULE: If bullet text continues on the next line (no bullet on that line), join it with a space onto the SAME output line. Never output a continuation as its own line.
+MULTI-LINE RULE: If bullet text wraps to the next line (no bullet on that line), JOIN it onto the same output line with a space.
 
-EXACT WORKED EXAMPLE for this specific panel content:
-Panel: "By Application" with these items:
+WORKED EXAMPLE A — 2-level hierarchy (By Application):
   LEVEL1: Coronary Artery Disease (CAD)
     LEVEL2: Severely Calcified Coronary Lesions
-    LEVEL2: Calcified Left Main Coronary Artery  <-- text wraps to next line: "Disease" -> JOIN as one
-    LEVEL2: Underexpanded Stents and Calcified   <-- text wraps to next line: "in Stent Restenosis Cases" -> JOIN
+    LEVEL2: Calcified Left Main Coronary Artery Disease  ← wrap joined
   LEVEL1: Peripheral Artery Disease (PAD)
     LEVEL2: Calcified Iliac Artery Lesions
-    LEVEL2: Calcified Femoral Popliteal Lesions
-    LEVEL2: Selected Infrapopliteal Calcified    <-- text wraps to next line: "Lesions" -> JOIN
-  LEVEL1: Other Emerging Areas (Renal Artery     <-- text wraps to next line: "Stenosis)" -> JOIN
-    (no LEVEL2 children)
+  LEVEL1: Other Emerging Areas (Renal Artery Stenosis)  ← no children
 
-CORRECT output for that panel:
+Correct output:
 === By Application ===
 Coronary Artery Disease (CAD) >>> Severely Calcified Coronary Lesions
 Coronary Artery Disease (CAD) >>> Calcified Left Main Coronary Artery Disease
-Coronary Artery Disease (CAD) >>> Underexpanded Stents and Calcified in Stent Restenosis Cases
 Peripheral Artery Disease (PAD) >>> Calcified Iliac Artery Lesions
-Peripheral Artery Disease (PAD) >>> Calcified Femoral Popliteal Lesions
-Peripheral Artery Disease (PAD) >>> Selected Infrapopliteal Calcified Lesions
 Other Emerging Areas (Renal Artery Stenosis) >>> (none)
 
+WORKED EXAMPLE B — 3-level hierarchy (By Vehicle Class):
+  LEVEL1: Passenger Vehicles
+    LEVEL2: Hatchback/Sedan          ← no level-3
+    LEVEL2: SUVs and Crossovers      ← no level-3
+  LEVEL1: Micromobility Vehicles
+    LEVEL2: Two-Wheelers
+      LEVEL3: Scooters/Mopeds
+      LEVEL3: Motorcycles
+    LEVEL2: Three-Wheelers
+      LEVEL3: Passenger (Auto-Rickshaw type)
+      LEVEL3: Cargo/Load-Carrying
+  LEVEL1: Off-Highway Vehicles
+    LEVEL2: Construction Equipment
+      LEVEL3: Excavators
+      LEVEL3: Loaders
+
+Correct output:
+=== By Vehicle Class ===
+Passenger Vehicles >>> Hatchback/Sedan
+Passenger Vehicles >>> SUVs and Crossovers
+Micromobility Vehicles >>> Two-Wheelers >>> Scooters/Mopeds
+Micromobility Vehicles >>> Two-Wheelers >>> Motorcycles
+Micromobility Vehicles >>> Three-Wheelers >>> Passenger (Auto-Rickshaw type)
+Micromobility Vehicles >>> Three-Wheelers >>> Cargo/Load-Carrying
+Off-Highway Vehicles >>> Construction Equipment >>> Excavators
+Off-Highway Vehicles >>> Construction Equipment >>> Loaders
+
 CRITICAL RULES:
-- "Disease" alone is NEVER a separate output line - it joins "Calcified Left Main Coronary Artery"
-- "in Stent Restenosis Cases" alone is NEVER a separate output line
-- "Lesions" alone is NEVER a separate output line
-- A LEVEL 1 parent that HAS LEVEL 2 children must NOT get a "(none)" line - only its children appear
-- Remove all bullet symbols from text
-- Write the FULL blue header text (never truncate)
+- Remove all bullet symbols (■ ○ · •) from text
+- Write the FULL blue header text — never truncate
+- Wrap continuation lines: join them with a space onto the prior line
 - Output ONLY the === and >>> lines. No other text, no explanation.`;
 
 // ─── Parse >>> lines into rows ────────────────────────────────────────────────
@@ -76,17 +95,26 @@ function parseSectionArrows(content: string, segmentName: string): Row[] {
     const line = rawLine.trim();
     if (!line || line.startsWith("===")) continue;
 
-    const arrowIdx = line.indexOf(" >>> ");
-    if (arrowIdx === -1) continue;
+    const parts = line.split(" >>> ");
+    if (parts.length < 2) continue;
 
-    const parent = clean(line.slice(0, arrowIdx));
-    const child = clean(line.slice(arrowIdx + 5));
-    if (!parent) continue;
+    const level1 = clean(parts[0]);
+    const level2 = clean(parts[1]);
+    const level3 = parts.length >= 3 ? clean(parts[2]) : null;
 
-    if (!child || child.toLowerCase() === "none" || child === "(none)") {
-      rows.push({ segment: segmentName, subSegment: parent, subSegment1: parent, subSegment2: parent });
+    if (!level1) continue;
+
+    const isNone = (s: string) => !s || s.toLowerCase() === "none" || s === "(none)";
+
+    if (isNone(level2)) {
+      // Level 1 only — all three columns collapse to level1
+      rows.push({ segment: segmentName, subSegment: level1, subSegment1: level1, subSegment2: level1 });
+    } else if (!level3 || isNone(level3)) {
+      // Two-level — subSegment2 repeats level2
+      rows.push({ segment: segmentName, subSegment: level1, subSegment1: level2, subSegment2: level2 });
     } else {
-      rows.push({ segment: segmentName, subSegment: parent, subSegment1: child, subSegment2: child });
+      // Three-level — full hierarchy
+      rows.push({ segment: segmentName, subSegment: level1, subSegment1: level2, subSegment2: level3 });
     }
   }
   return rows;
