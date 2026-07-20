@@ -20,6 +20,7 @@ export const MAIN_SEGMENT_TYPES = [
   "By End-Use Industry",
   "By End Use Industry",
   "By End Use",
+  "By Indication",
   "By Region",
   "By Country",
   "By Installation Type",
@@ -35,11 +36,34 @@ export const MAIN_SEGMENT_TYPES = [
   "By Platform Capacity",
   "By Well Type",
   "By Well Location",
+  "By Route of Administration",
+  "By Drug Class & Molecule",
+  "By Drug Class and Molecule",
+  "By Drug Class",
+  "By Molecule",
+  "By Formulation",
+  "By Therapy Type",
+  "By Disease Type",
+  "By Patient Type",
+  "By Type of Care",
+  "By Mode of Action",
+  "By Treatment Type",
+  "By Deployment Mode",
+  "By Organization Size",
+  "By Ownership",
+  "By Crop Type",
+  "By Source",
+  "By Form",
+  "By Function",
+  "By Grade",
+  "By Capacity",
+  "By End Market",
 ] as const;
 
 export type MainSegmentType = (typeof MAIN_SEGMENT_TYPES)[number];
 
-const SEGMENT_HEADER_RE = /\bBy\s+(?:[A-Z][A-Za-z-]*(?:\s+[A-Z][A-Za-z-]*){0,4})/g;
+// Matches "By X" headers — allows lowercase connectors (of, and, the) and & between words
+const SEGMENT_HEADER_RE = /\bBy\s+(?:[A-Z][A-Za-z-]*(?:\s+(?:[A-Z][A-Za-z-]*|of|and|the|&))*)/g;
 
 export function extractSegmentHeaders(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();

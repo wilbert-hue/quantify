@@ -132,8 +132,12 @@ export function buildAlignedDataset(parsedRows: ExtractedRow[]): ExtractedRow[] 
       output.push(definitionToRow(region, def, order++, "upload", "segments"));
     }
 
+    // Only output geo rows where this region is the direct parent (subSegment === region).
+    // Prevents "North America → U.S." geo row from appearing under the "U.S." region row.
     for (const geo of geoDefs) {
-      output.push(definitionToRow(region, geo, order++, "upload", "geographies"));
+      if (geo.subSegment === region) {
+        output.push(definitionToRow(region, geo, order++, "upload", "geographies"));
+      }
     }
   }
 
