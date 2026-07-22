@@ -72,16 +72,27 @@ async function extractWithVision(
   file: File,
   category: UploadCategory
 ): Promise<ExtractedRow[]> {
-  log.info("extractWithVision start", file.name, category);
+  return extractBatchWithVision([file], category);
+}
 
-  const imageBase64 = await fileToBase64(file);
-  const mimeType = normalizeMime(file);
-  log.info("POST /api/extract-image", { mimeType, base64Len: imageBase64.length });
+export async function extractBatchWithVision(
+  files: File[],
+  category: UploadCategory
+): Promise<ExtractedRow[]> {
+  log.info("extractBatchWithVision start", files.map(f => f.name), category);
+
+  const images = await Promise.all(files.map(async (file) => ({
+    imageBase64: await fileToBase64(file),
+    mimeType: normalizeMime(file),
+    filename: file.name,
+  })));
+
+  log.info("POST /api/extract-image (batch)", { count: images.length, totalBase64: images.reduce((s, i) => s + i.imageBase64.length, 0) });
 
   const res = await fetch("/api/extract-image", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ imageBase64, mimeType, filename: file.name }),
+    body: JSON.stringify({ images }),
   });
 
   log.info("API response", `HTTP ${res.status}`);
@@ -105,7 +116,7 @@ async function extractWithVision(
     throw new Error("No rows extracted — check the image contains visible segment data");
   }
 
-  const dataset = detectDataset(file);
+  const dataset = detectDataset(files[0]);
   const rows = visionRows.map((r, order) => ({
     region: "Global",
     segment: r.segment ?? "",
@@ -113,7 +124,7 @@ async function extractWithVision(
     subSegment1: r.subSegment1 ?? r.subSegment ?? "",
     subSegment2: r.subSegment2 ?? r.subSegment1 ?? r.subSegment ?? "",
     values: emptyYearValues(),
-    source: file.name,
+    source: files.map(f => f.name).join(", "),
     order,
     dataset,
     uploadCategory: category,

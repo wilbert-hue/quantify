@@ -81,7 +81,8 @@ function parseArrowLines(text: string, fallbackName: string): Row[] {
   }
 
   for (let i = 1; i < sections.length - 1; i += 2) {
-    const header = sections[i].trim();
+    // Strip continuation suffixes like "(1/2)", "(2/3)" so all parts merge under the same segment
+    const header = sections[i].trim().replace(/\s*\(\d+\/\d+\)\s*$/, "").trim();
     const content = sections[i + 1] ?? "";
     if (header) allRows.push(...parseSectionArrows(content, header));
   }
@@ -124,6 +125,8 @@ function clean(s: string): string {
   return s.replace(/[■○•◦❖▪*]/g, "").replace(/\s+/g, " ").trim();
 }
 
+type ImageEntry = { imageBase64: string; mimeType: string; filename: string };
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -131,32 +134,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
   }
 
-  let body: { imageBase64: string; mimeType: string; filename: string };
+  let body: { images?: ImageEntry[]; imageBase64?: string; mimeType?: string; filename?: string };
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 }); }
 
-  const { imageBase64, mimeType, filename } = body;
-  if (!imageBase64 || !mimeType) {
-    return NextResponse.json({ error: "Missing imageBase64 or mimeType" }, { status: 400 });
+  // Support both batch (images[]) and legacy single-image format
+  const images: ImageEntry[] = body.images?.length
+    ? body.images
+    : body.imageBase64 && body.mimeType
+      ? [{ imageBase64: body.imageBase64, mimeType: body.mimeType, filename: body.filename ?? "upload" }]
+      : [];
+
+  if (images.length === 0) {
+    return NextResponse.json({ error: "No images provided" }, { status: 400 });
   }
 
   try {
     const client = new Anthropic({ apiKey });
 
+    const imageBlocks = images.map(img => ({
+      type: "image" as const,
+      source: {
+        type: "base64" as const,
+        media_type: img.mimeType as "image/png" | "image/jpeg" | "image/webp" | "image/gif",
+        data: img.imageBase64,
+      },
+    }));
+
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 2048,
+      max_tokens: 4096,
       messages: [{
         role: "user",
         content: [
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: mimeType as "image/png" | "image/jpeg" | "image/webp" | "image/gif",
-              data: imageBase64,
-            },
-          },
+          ...imageBlocks,
           { type: "text", text: PROMPT },
         ],
       }],
@@ -167,7 +178,7 @@ export async function POST(req: NextRequest) {
       .map(b => (b as { type: "text"; text: string }).text)
       .join("\n");
 
-    const rows = parseArrowLines(rawText, filename);
+    const rows = parseArrowLines(rawText, images[0].filename);
     return NextResponse.json({ rows, _debug_rawText: rawText });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

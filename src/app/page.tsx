@@ -149,41 +149,67 @@ export default function HomePage() {
     setProcessing(true);
     setProgress(0);
     let workingFiles = queue;
-    const { extractRowsFromFile } = await import("@/lib/extractFile");
+    const { extractRowsFromFile, extractBatchWithVision } = await import("@/lib/extractFile");
 
-    for (let i = 0; i < pending.length; i++) {
-      const item = pending[i];
+    // Split pending into image batches (by category) and individual spreadsheets
+    const pendingImages = pending.filter((f) => f.kind === "image");
+    const pendingSheets = pending.filter((f) => f.kind !== "image");
+
+    // Batch all images of the same category into ONE Claude call so context
+    // carries across continuation slides (e.g. "By Molecule Type (1/2)" + "(2/2)")
+    const categories = [...new Set(pendingImages.map((f) => f.category))] as UploadCategory[];
+    let batchDone = 0;
+    for (const cat of categories) {
+      const batch = pendingImages.filter((f) => f.category === cat);
+      const batchIds = new Set(batch.map((f) => f.id));
+
+      workingFiles = workingFiles.map((f) =>
+        batchIds.has(f.id) ? { ...f, status: "processing" as const, error: undefined } : f
+      );
+      setFiles(workingFiles);
+
+      try {
+        const rows = await extractBatchWithVision(batch.map((f) => f.file), cat);
+        // Distribute rows to all files in the batch (all share the combined result)
+        workingFiles = workingFiles.map((f) =>
+          batchIds.has(f.id) ? { ...f, status: "done" as const, parsedRows: f.id === batch[0].id ? rows : [] } : f
+        );
+      } catch (error) {
+        workingFiles = workingFiles.map((f) =>
+          batchIds.has(f.id)
+            ? { ...f, status: "error" as const, error: error instanceof Error ? error.message : "Processing failed" }
+            : f
+        );
+      }
+
+      batchDone += batch.length;
+      setProgress(Math.round((batchDone / pending.length) * 80));
+      setFiles(workingFiles);
+    }
+
+    // Process spreadsheets individually
+    for (let i = 0; i < pendingSheets.length; i++) {
+      const item = pendingSheets[i];
       workingFiles = workingFiles.map((f) =>
         f.id === item.id ? { ...f, status: "processing" as const, error: undefined } : f
       );
       setFiles(workingFiles);
 
       try {
-        const { rows, ocrText } = await extractRowsFromFile(
-          item.file,
-          item.category,
-          item.kind === "image"
-            ? (pct) => setProgress(Math.round(((i + pct / 100) / pending.length) * 100))
-            : undefined
-        );
-
+        const { rows, ocrText } = await extractRowsFromFile(item.file, item.category);
         if (ocrText) setLastOcrPreview(ocrText.slice(0, 2500));
-
         workingFiles = workingFiles.map((f) =>
           f.id === item.id ? { ...f, status: "done" as const, ocrText, parsedRows: rows } : f
         );
       } catch (error) {
         workingFiles = workingFiles.map((f) =>
           f.id === item.id
-            ? {
-                ...f,
-                status: "error" as const,
-                error: error instanceof Error ? error.message : "Processing failed",
-              }
+            ? { ...f, status: "error" as const, error: error instanceof Error ? error.message : "Processing failed" }
             : f
         );
       }
 
+      setProgress(80 + Math.round(((i + 1) / Math.max(pendingSheets.length, 1)) * 20));
       setFiles(workingFiles);
     }
 
