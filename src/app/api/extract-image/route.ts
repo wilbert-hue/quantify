@@ -3,7 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 type Row = { segment: string; subSegment: string; subSegment1: string; subSegment2: string };
 
-const PROMPT = `This image shows a slide with one or more panels. Each panel has a blue header bar and a bullet list.
+const PROMPT = `The image(s) show market segmentation lists in ONE of two layouts:
+
+LAYOUT 1 — SLIDE PANELS: each panel has a coloured (usually blue) header bar and a bullet list below it.
+LAYOUT 2 — SPREADSHEET / TABLE: a single column of cells. Shaded/coloured/bold rows (usually starting with "By ...") are the PANEL HEADERS. Every plain row below a header, until the next header, is a LEVEL 1 item of that header (these rows have no bullets). Blank rows only separate groups — ignore them.
 
 The bullet list can have up to THREE visual levels:
 - LEVEL 1: FILLED SQUARE bullet (■), at the far LEFT edge
@@ -64,7 +67,37 @@ Micromobility Vehicles >>> Three-Wheelers >>> Cargo/Load-Carrying
 Off-Highway Vehicles >>> Construction Equipment >>> Excavators
 Off-Highway Vehicles >>> Construction Equipment >>> Loaders
 
+WORKED EXAMPLE C — spreadsheet/table layout (no bullets):
+  [shaded] By Gas Type
+  Hydrocarbon Gases
+  Carbon Monoxide
+  [blank]
+  [shaded] By Distribution Channel
+  Direct Sales
+
+Correct output:
+=== By Gas Type ===
+Hydrocarbon Gases >>> (none)
+Carbon Monoxide >>> (none)
+=== By Distribution Channel ===
+Direct Sales >>> (none)
+
+WORKED EXAMPLE D — multi-column panel (e.g. By Region): a panel's list may flow into a 2nd/3rd COLUMN.
+An indented (○) item at the TOP of a new column belongs to the LAST level-1 item of the previous column.
+  Column 1 ends with:    ■ Asia Pacific, ○ China, ○ India, ○ Japan
+  Column 2 starts with:  ○ South Korea, ○ ASEAN, ■ Latin America, ○ Brazil
+
+Correct output:
+Asia Pacific >>> China
+Asia Pacific >>> India
+Asia Pacific >>> Japan
+Asia Pacific >>> South Korea
+Asia Pacific >>> ASEAN
+Latin America >>> Brazil
+
 CRITICAL RULES:
+- NEVER repeat the header text (e.g. "By Gas Type") as a LEVEL 1 item — it goes ONLY in the === line
+- Ignore slide titles such as "GLOBAL ... MARKET" — they are not panel headers
 - Remove all bullet symbols (■ ○ · •) from text
 - Write the FULL blue header text — never truncate
 - Wrap continuation lines: join them with a space onto the prior line
@@ -73,10 +106,12 @@ CRITICAL RULES:
 // ─── Parse >>> lines into rows ────────────────────────────────────────────────
 function parseArrowLines(text: string, fallbackName: string): Row[] {
   const allRows: Row[] = [];
-  const sections = text.split(/===\s*(.+?)\s*===/);
+  // Strip markdown the model sometimes adds: code fences and **bold** around headers
+  const normalized = text.replace(/```[a-z]*/gi, "").replace(/\*\*/g, "");
+  const sections = normalized.split(/^\s*===\s*(.+?)\s*===\s*$/m);
 
   if (sections.length < 3) {
-    allRows.push(...parseSectionArrows(text, fallbackName));
+    allRows.push(...parseSectionArrows(normalized, fallbackName));
     return allRows;
   }
 
@@ -90,27 +125,32 @@ function parseArrowLines(text: string, fallbackName: string): Row[] {
   return allRows;
 }
 
+const isNone = (s: string | undefined) =>
+  !s || s.toLowerCase() === "none" || s.toLowerCase() === "(none)";
+
+const isHeaderLike = (s: string, segmentName: string) =>
+  /^by\s+/i.test(s) || s.replace(/\s+/g, " ").toLowerCase() === segmentName.replace(/\s+/g, " ").toLowerCase();
+
 function parseSectionArrows(content: string, segmentName: string): Row[] {
   const rows: Row[] = [];
   for (const rawLine of content.split("\n")) {
     const line = rawLine.trim();
     if (!line || line.startsWith("===")) continue;
 
-    const parts = line.split(" >>> ");
-    if (parts.length < 2) continue;
+    // A plain line without ">>>" (model skipped the "(none)" marker) is a level-1 item
+    let parts = (line.includes(">>>") ? line.split(/\s*>>>\s*/) : [line]).map(clean);
 
-    const level1 = clean(parts[0]);
-    const level2 = clean(parts[1]);
-    const level3 = parts.length >= 3 ? clean(parts[2]) : null;
+    // Model sometimes repeats the header as level 1 ("By Gas Type >>> Ammonia") — drop it
+    while (parts.length > 1 && isHeaderLike(parts[0], segmentName)) parts = parts.slice(1);
+    parts = parts.filter((p, i) => i === 0 || !isNone(p));
 
-    if (!level1) continue;
+    const [level1, level2, level3] = parts;
+    if (isNone(level1) || isHeaderLike(level1, segmentName)) continue;
 
-    const isNone = (s: string) => !s || s.toLowerCase() === "none" || s === "(none)";
-
-    if (isNone(level2)) {
+    if (!level2) {
       // Level 1 only — all three columns collapse to level1
       rows.push({ segment: segmentName, subSegment: level1, subSegment1: level1, subSegment2: level1 });
-    } else if (!level3 || isNone(level3)) {
+    } else if (!level3) {
       // Two-level — subSegment2 repeats level2
       rows.push({ segment: segmentName, subSegment: level1, subSegment1: level2, subSegment2: level2 });
     } else {
@@ -122,7 +162,7 @@ function parseSectionArrows(content: string, segmentName: string): Row[] {
 }
 
 function clean(s: string): string {
-  return s.replace(/[■○•◦❖▪*]/g, "").replace(/\s+/g, " ").trim();
+  return s.replace(/^[-–]\s+/, "").replace(/[■○•◦❖▪*]/g, "").replace(/\s+/g, " ").trim();
 }
 
 type ImageEntry = { imageBase64: string; mimeType: string; filename: string };
@@ -163,7 +203,8 @@ export async function POST(req: NextRequest) {
 
     const message = await client.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 4096,
+      max_tokens: 8192,
+      temperature: 0,
       messages: [{
         role: "user",
         content: [

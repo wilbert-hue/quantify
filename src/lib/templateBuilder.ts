@@ -39,6 +39,7 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
   const geoDefs: SegmentDefinition[] = [];
   const seenSegments = new Set<string>();
   const seenGeo = new Set<string>();
+  const segmentGeoDefs: SegmentDefinition[] = [];
 
   for (const row of parsedRows) {
     const category = row.uploadCategory;
@@ -67,8 +68,12 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
     const key = [def.segment, def.subSegment, def.subSegment1, def.subSegment2].join("|");
 
     if (isGeoSegment(def.segment)) {
-      if (category === "segments") continue;
       if (!isValidGeoDefinition(def)) continue;
+      // Region panel uploaded in the Segments box — keep it as a fallback geography source
+      if (category === "segments") {
+        segmentGeoDefs.push({ ...def, segment: "By Region" });
+        continue;
+      }
       if (seenGeo.has(key)) continue;
       seenGeo.add(key);
       geoDefs.push(def);
@@ -78,6 +83,16 @@ function collectDefinitions(parsedRows: ExtractedRow[]): {
     if (seenSegments.has(key)) continue;
     seenSegments.add(key);
     segmentDefs.push(def);
+  }
+
+  // Dedicated geography uploads always win; otherwise use regions found in segment slides
+  if (geoDefs.length === 0) {
+    for (const def of segmentGeoDefs) {
+      const key = [def.segment, def.subSegment, def.subSegment1, def.subSegment2].join("|");
+      if (seenGeo.has(key)) continue;
+      seenGeo.add(key);
+      geoDefs.push(def);
+    }
   }
 
   return { segmentDefs, geoDefs };
