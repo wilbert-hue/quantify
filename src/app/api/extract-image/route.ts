@@ -98,6 +98,7 @@ Latin America >>> Brazil
 CRITICAL RULES:
 - NEVER repeat the header text (e.g. "By Gas Type") as a LEVEL 1 item — it goes ONLY in the === line
 - Ignore slide titles such as "GLOBAL ... MARKET" — they are not panel headers
+- If the image has NO header at all (e.g. it only shows "U.S." or a plain list of names), do NOT turn the items into === lines — output each one as "[item] >>> (none)" with no === line
 - Remove all bullet symbols (■ ○ · •) from text
 - Write the FULL blue header text — never truncate
 - Wrap continuation lines: join them with a space onto the prior line
@@ -119,7 +120,15 @@ function parseArrowLines(text: string, fallbackName: string): Row[] {
     // Strip continuation suffixes like "(1/2)", "(2/3)" so all parts merge under the same segment
     const header = sections[i].trim().replace(/\s*\(\d+\/\d+\)\s*$/, "").trim();
     const content = sections[i + 1] ?? "";
-    if (header) allRows.push(...parseSectionArrows(content, header));
+    if (!header) continue;
+    const sectionRows = parseSectionArrows(content, header);
+    // Image with no real header (e.g. just "U.S.") — model emits the item as "=== U.S. ===" with nothing under it
+    if (sectionRows.length === 0 && !/^by\s+/i.test(header)) {
+      const item = clean(header);
+      allRows.push({ segment: fallbackName, subSegment: item, subSegment1: item, subSegment2: item });
+    } else {
+      allRows.push(...sectionRows);
+    }
   }
 
   return allRows;
